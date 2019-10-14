@@ -1,12 +1,15 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, {useState} from 'react';
 
 function App() {
+
+  const [show, setShow] = useState(false);
+
   return (
     <div className="App">
+
+      { show ? <h1 onClick="setShow(true)">My First Server Side Render</h1> : null }
+      { !show ? <h1 onClick="setShow(false)">My Second Server Side Render</h1> : null }
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
         <p>
           Edit <code>src/App.js</code> and save to reload.
         </p>
