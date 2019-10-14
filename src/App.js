@@ -4,11 +4,17 @@ import {Link, Route, Switch} from 'react-router-dom';
 import {Green} from './pages/Green';
 import {Red} from './pages/Red';
 import {Black} from './pages/Black';
+import { Helmet } from 'react-helmet';
 
 function App() {
 
   return (
     <div className="App">
+      <Helmet>
+          <meta content="SSR" property="og:title" />
+          <meta content="SSR example description" name="description"  />
+      </Helmet>
+
       <header className="App-header">
         <Link to={'/green'}>Green</Link>
         -

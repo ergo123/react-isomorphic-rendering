@@ -13,7 +13,7 @@ const app = express()
 
 const router = express.Router()
 
-const serverRenderer = (req, res, next) => {
+const serverRenderer = (req, res) => {
     fs.readFile(path.resolve('./build/index.html'), 'utf8', (err, data) => {
         if (err) {
             console.error(err)
@@ -21,7 +21,7 @@ const serverRenderer = (req, res, next) => {
         }
 
         const html = ReactDOMServer.renderToString(
-            <StaticRouter>
+            <StaticRouter location={req.originalUrl}>
                 <App/>
             </StaticRouter>
         );
@@ -34,16 +34,14 @@ const serverRenderer = (req, res, next) => {
         )
     })
 }
-router.use('^/$', serverRenderer)
 
-router.use(
-    express.static(path.resolve(__dirname, '..', 'build'), { maxAge: '30d' })
-)
+const colorRenderer = (req, res) => {
+    res.json(req.params)
+}
 
-// tell the app to use the above rules
+router.use(express.static(path.resolve(__dirname, '..', 'build'), { maxAge: '30d' }));
+router.get('/api/colors/:color', colorRenderer)
+router.get(/^\/.+$/i, serverRenderer)
+
 app.use(router)
-
-// app.use(express.static('./build'))
-app.listen(PORT, () => {
-    console.log(`SSR running on port ${PORT}`)
-})
+app.listen(PORT, () => console.log(`SSR running on port ${PORT}`))
