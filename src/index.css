@@ -15,3 +15,10 @@ code {
 h1 {
   color: red;
 }
+
+.app-header {
+  display: flex;
+}
+.app-header a {
+    margin-right: 10px;
+}
