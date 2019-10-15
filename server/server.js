@@ -1,6 +1,6 @@
 import path from 'path'
 import fs from 'fs'
-import { LoremIpsum } from 'lorem-ipsum';
+import axios from 'axios';
 
 import express from 'express'
 import React from 'react'
@@ -8,22 +8,15 @@ import ReactDOMServer from 'react-dom/server'
 
 import App from '../src/App'
 import {StaticRouter} from 'react-router';
+import store from '../src/services/store/store';
+import {fetchApp, fetchPage} from '../src/services/store/actions';
+import {Provider} from 'react-redux';
+import {appRenderer, pageRenderer} from './apiRenderer';
 
 const PORT = 8080
 const app = express()
 
 const router = express.Router()
-
-const lorem = new LoremIpsum({
-    sentencesPerParagraph: {
-        max: 8,
-        min: 4
-    },
-    wordsPerSentence: {
-        max: 16,
-        min: 4
-    }
-});
 
 const serverRenderer = (req, res) => {
     fs.readFile(path.resolve('./build/index.html'), 'utf8', (err, data) => {
@@ -32,33 +25,36 @@ const serverRenderer = (req, res) => {
             return res.status(500).send('An error occurred')
         }
 
-        const html = ReactDOMServer.renderToString(
-            <StaticRouter location={req.originalUrl}>
-                <App/>
-            </StaticRouter>
+        axios.defaults.baseURL = 'http://localhost:8080';
+
+        const pageId = req.path.substr(1);
+
+        return store.dispatch(fetchApp())
+            .then(() => store.dispatch(fetchPage(pageId)))
+            .then(() => {
+                const html = ReactDOMServer.renderToString(
+                    <StaticRouter location={req.originalUrl}>
+                        <Provider store={store}>
+                            <App/>
+                        </Provider>
+                    </StaticRouter>
+                );
+
+                let stateStr = JSON.stringify(store.getState());
+
+                return res.send(data
+                    .replace(
+                        '<div id="root"></div>',
+                        `<div id="root">${html}</div>`
+                    )
+                    .replace(
+                        '<script type="application/json" id="__INITIAL_STATE__"></script>',
+                        `<script type="application/json" id="__INITIAL_STATE__">${stateStr}</script>`,
+                    )
+                )
+            }
         );
 
-        return res.send(
-            data.replace(
-                '<div id="root"></div>',
-                `<div id="root">${html}</div>`
-            )
-        )
-    })
-}
-
-const pageRenderer = (req, res) => {
-    res.json({ text: lorem.generateSentences(40) })
-}
-
-const appRenderer = (req, res) => {
-    res.json({
-        p1: { text: lorem.generateSentences(1) },
-        p2: { text: lorem.generateSentences(2) },
-        p3: { text: lorem.generateSentences(3) },
-        p4: { text: lorem.generateSentences(4) },
-        p5: { text: lorem.generateSentences(5) },
-        home: { text: lorem.generateSentences(5) },
     })
 }
 

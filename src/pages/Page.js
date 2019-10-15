@@ -1,22 +1,20 @@
-import React, {useEffect, useState} from 'react';
-import {api} from '../services/api';
+import React, {useEffect} from 'react';
 import {useParams} from 'react-router-dom';
+import {useDispatch, useSelector} from 'react-redux';
+import {fetchPage} from '../services/store/actions';
 
 export function Page() {
 
-    const [data, setData] = useState('');
+    const dispatch = useDispatch()
     const { id } = useParams();
+    const data = useSelector(state => state.pages[id] || {});
 
     useEffect(() => {
-        async function fetchData() {
-            const response = await api.getPage(id)
-            setData(response.data.text)
-        }
-        fetchData()
+        dispatch(fetchPage(id));
     }, [id]);
 
     return <div>
         <h3>Page {id}</h3>
-        <div>{data}</div>
+        <div>{data.text}</div>
     </div>
 }
