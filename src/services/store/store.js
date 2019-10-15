@@ -5,7 +5,9 @@ import window from 'global';
 
 const getPreloadedState = () => {
     try {
-        const jsonScript = document.getElementById("__INITIAL_STATE__").innerText.trim();
+        const script = document.getElementById("__INITIAL_STATE__");
+        const jsonScript = script.innerText.trim();
+        script.remove();
         return jsonScript ? JSON.parse(jsonScript) : initialState;
     } catch(e) {
         return initialState;
